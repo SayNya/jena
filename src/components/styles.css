@@ -1,0 +1,119 @@
+*{
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: border-box;
+}
+
+
+.Top_text{
+    font-size: 40px;
+    color: white;
+}
+
+.Top_text_place{
+    /*background: black;*/
+    color: white;
+    border: medium solid #000000;
+    /*border: solid 2px black;*/
+}
+
+.Main_table{
+    margin: 20px auto 40px;
+    width: 80%;
+    border: solid 2px white;
+    padding: 20px;
+    height: 80vh;
+    border-radius: 25px;
+
+
+    /*text-align: center;*/
+}
+
+.Context_box{
+    cursor: pointer;
+}
+
+.Context_box:hover{
+
+}
+
+.Context_string{
+    color: orange;
+}
+
+.Context_string:hover{
+    background: lightgrey;
+    transition: 1s;
+    border: lightgrey;
+    color: black;
+
+}
+
+.Form_place{
+    height: 8rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: solid 2px white;
+    padding: 10px;
+    border-radius: 25px;
+}
+
+.Form_place_wrap {
+    width: 30%;
+    margin: 0 auto;
+    color: white;
+
+}
+
+.input_style{
+    height: 2rem;
+    border-radius: 25px;
+    border: solid 2px white;
+    padding: 5px;
+    background: grey;
+    color: orange;
+}
+
+.submit_button{
+    width: 7rem;
+    height: 2rem;
+    border-radius: 25px;
+    background: grey;
+    border: solid 2px white;
+    margin: 0 auto;
+    color: orange;
+
+}
+
+.submit_button:hover{
+    background: lightgrey;
+    transition: 1s;
+    cursor: pointer;
+
+}
+
+.label_style_text{
+    font-size: 20px;
+}
+
+.tables{
+    min-height: 80vh;
+}
+
+.forms{
+    min-height: 20vh;
+
+}
+
+.main_wrap{
+    background: grey;
+    /*background: black;*/
+}
+
+.Context_string>.Context_box:hover{
+    border: solid 2px lightgrey;
+    color: black;
+}
+
