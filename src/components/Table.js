@@ -41,6 +41,10 @@ export default function Table() {
     function handleCreate(classname) {
         return function (event) {
             createEntity(crEntityName, classname)
+            getEntities()
+                .then(res => {
+                    setEntities(res)
+                })
             event.preventDefault()
         }
     }

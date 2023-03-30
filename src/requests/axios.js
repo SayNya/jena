@@ -77,17 +77,20 @@ export function getEntities() {
 }
 
 export function createEntity(entityname, classname) {
-    let entityUri = encodeURI(`<http://www.semanticweb.org/ontologies#${entityname}>`)
-    let classnameUri = encodeURI(`<http://www.semanticweb.org/ontologies#${classname}>`)
     axios.post(
         JENA_URL,
-        "how to send body post request with axios",
+        "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+        "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+        "INSERT DATA\n" +
+        "{\n" +
+        `  <http://www.semanticweb.org/ontologies#${entityname}> rdf:type <${classname}> .\n` +
+        `  <http://www.semanticweb.org/ontologies#${entityname}> rdfs:label \"${entityname}\" .\n` +
+        "}",
         {
             headers: {
                 'Authorization': `Basic YWRtaW46YWRtaW4=`,
                 'Content-Type': 'application/sparql-update',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+                'Origin': 'http://localhost:3000/',
             }
         })
         .then(res => {
