@@ -30,7 +30,17 @@
     /*text-align: center;*/
 }
 
+.Main_table_2{
+    margin: 20px auto 40px;
+    width: 100%;
+    border: solid 2px white;
+    padding: 20px;
+    min-height: 80vh;
+    border-radius: 25px;
+}
+
 .Context_box{
+    font-size: 20px;
     cursor: pointer;
 }
 
@@ -60,8 +70,19 @@
     border-radius: 25px;
 }
 
+.Form_place_2{
+    height: 12rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: solid 2px white;
+    padding: 10px;
+    border-radius: 25px;
+}
+
 .Form_place_wrap {
-    width: 30%;
+    /*width: 30%;*/
+    width: 80%;
     margin: 0 auto;
     color: white;
 
@@ -104,6 +125,7 @@
 
 .forms{
     min-height: 20vh;
+    /*width: 30%;*/
 
 }
 
@@ -115,5 +137,16 @@
 .Context_string>.Context_box:hover{
     border: solid 2px lightgrey;
     color: black;
+}
+
+
+.change_lable{
+    width: 7rem;
+    height: 2rem;
+    border-radius: 25px;
+    background: grey;
+    border: solid 2px white;
+    margin: 0 auto;
+    color: orange;
 }
 

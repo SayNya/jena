@@ -1,6 +1,8 @@
 import {Tab, TabList, TabPanel, Tabs} from "react-tabs";
 import {useEffect, useState} from "react";
 import {createEntity, getClasses, getEntities, getProperties, search1, search2, search3} from "../requests/axios";
+import {getSortedEntities, getStrAfterHashtag} from "../utils/utils";
+import Modal from "./modal/modal";
 
 export default function Table() {
     const [classes, setClasses] = useState()
@@ -19,17 +21,35 @@ export default function Table() {
     const [s3c2, setS3c2] = useState()
     const [s3r, setS3r] = useState()
 
+    const [entity_name, setEntityName] = useState()
+    const [prevProperty, setPrevProperty] = useState()
+
+    const [active, setActive] = useState()
+
 
     const [crEntityName, setCrEntityName] = useState()
 
     useEffect(() => {
         getClasses()
             .then(res => {
+                res.sort((a, b) => {
+                    let fa = a.label.value.toLowerCase(),
+                        fb = b.label.value.toLowerCase();
+
+                    if (fa < fb) {
+                        return -1;
+                    }
+                    if (fa > fb) {
+                        return 1;
+                    }
+                    return 0;
+                });
                 setClasses(res)
             })
         getEntities()
             .then(res => {
-                setEntities(res)
+                console.log(getSortedEntities(res))
+                setEntities(getSortedEntities(res))
             })
         getProperties()
             .then(res => {
@@ -39,13 +59,17 @@ export default function Table() {
     }, [])
 
     function handleCreate(classname) {
-        return function (event) {
-            createEntity(crEntityName, classname)
-            getEntities()
-                .then(res => {
-                    setEntities(res)
-                })
-            event.preventDefault()
+        return async function handleCreate(event) {
+            event.preventDefault();
+            try {
+                await createEntity(crEntityName, classname); // дождаться завершения создания записи
+
+                const res = await getEntities();
+                const sortedEntities = getSortedEntities(res);
+                setEntities(sortedEntities);
+            } catch (error) {
+                console.log(error);
+            }
         }
     }
 
@@ -75,6 +99,21 @@ export default function Table() {
 
     function handleS3c2(event) {
         setS3c2(event.target.value)
+    }
+
+    function handleChange(subject, properties) {
+        return function (event) {
+            if (properties) {
+                properties.forEach(prop => {
+                    if (prop.property === "http://www.w3.org/2000/01/rdf-schema#label") {
+                        setPrevProperty(prop.value)
+                    }
+                })
+            }
+            setEntityName(subject)
+            setActive(true)
+            event.preventDefault()
+        }
     }
 
     function handleSearch(type) {
@@ -124,16 +163,14 @@ export default function Table() {
 
                             <tr className="Top_text_place">
                                 <th className="Top_text">Class</th>
-                                <th className="Top_text">Label</th>
                                 <th className="Top_text">SubClassOf</th>
                             </tr>
                             {classes ? classes.map(cls => {
                                 if (cls.label === undefined) return
                                 return (
                                     <tr className="Context_string">
-                                        <td className="Context_box">{cls.class.value}</td>
                                         <td className="Context_box">{cls.label.value}</td>
-                                        <td className="Context_box">{cls.subClassOf ? cls.subClassOf.value : "Не является подклассом"}</td>
+                                        <td className="Context_box">{cls.subClassOf ? getStrAfterHashtag(cls.subClassOf.value) : "Не является подклассом"}</td>
                                     </tr>
                                 )
                             }) : ""}
@@ -157,23 +194,71 @@ export default function Table() {
                         </table>
                     </TabPanel>
                     <TabPanel>
-                        <table className="Main_table">
-                            <tr className="Top_text_place">
-                                <th className="Top_text">Instance</th>
-                                <th className="Top_text">Classname</th>
-                            </tr>
-                            {entities ? entities.map(entity => {
-                                if (entity.classname === undefined) return
+                        <Tabs forceRenderTabPanel defaultIndex={0}>
+                            <TabList>
+                                {classes ? classes.map(cls => {
+                                    if (cls.label.value === "Направление" || cls.label.value === "Человек") return
+                                    return <Tab>{cls.label.value}</Tab>
+                                }) : ""}
+                            </TabList>
+                            {entities ? entities.map(ents => {
                                 return (
-                                    <tr className="Context_string">
-                                        <td className="Context_box">{entity.instance.value}</td>
-                                        <td className="Context_box">{entity.classname.value}</td>
-                                    </tr>
+                                    <TabPanel>
+                                        <Tabs forceRenderTabPanel defaultIndex={0}>
+                                            <TabList>
+                                                {ents ? ents.map(entity => {
+                                                    return <Tab>{getStrAfterHashtag(entity.subject)}</Tab>
+                                                }) : ""}
+                                            </TabList>
+                                            {ents ? ents.map(entity => {
+                                                return (
+                                                    <TabPanel>
+                                                        <table className="Main_table">
+                                                            <tr className="Top_text_place">
+                                                                <th className="Top_text">Property</th>
+                                                                <th className="Top_text">Value</th>
+                                                            </tr>
+                                                            {entity ? entity.properties.map(property => {
+                                                                return (
+                                                                    <tr className="Context_string">
+                                                                        <td className="Context_box">{getStrAfterHashtag(property.property)}</td>
+                                                                        <td className="Context_box">{getStrAfterHashtag(property.value)}</td>
+                                                                    </tr>
+
+                                                                )
+                                                            }) : ""}
+                                                        </table>
+                                                        <button onClick={handleChange(entity.subject, entity.properties)} className="change_lable">
+                                                            Change Label
+                                                        </button>
+                                                    </TabPanel>
+                                                )
+                                            }) : ""}
+                                        </Tabs>
+                                    </TabPanel>
                                 )
                             }) : ""}
-                        </table>
-                    </TabPanel>
 
+                            <TabPanel>
+                                <table className="Main_table">
+                                    <tr className="Top_text_place">
+                                        <th className="Top_text">Instance</th>
+                                        <th className="Top_text">Classname</th>
+                                    </tr>
+                                    {entities ? entities.map(entity => {
+                                        if (entity.classname === undefined) return
+                                        return (
+                                            <tr className="Context_string">
+                                                <td className="Context_box">{entity.instance.value}</td>
+                                                <td className="Context_box">{entity.classname.value}</td>
+                                            </tr>
+                                        )
+                                    }) : ""}
+                                </table>
+                            </TabPanel>
+
+                        </Tabs>
+                    </TabPanel>
                 </Tabs>
             </div>
             <div className="forms">
@@ -218,7 +303,7 @@ export default function Table() {
                     </TabList>
                     <div className="Form_place_wrap">
                         <TabPanel>
-                            <form onSubmit={handleSearch(1)} className="Form_place">
+                            <form onSubmit={handleSearch(1)} className="Form_place_2">
                                 <label className="label_style_text" htmlFor="input_style_id">Класс 1:</label>
 
                                 <input id="input_style_id" className="input_style" type="text"
@@ -230,7 +315,7 @@ export default function Table() {
 
                                 <input className="submit_button" type="submit" value="Отправить"/>
                             </form>
-                            <table className="Main_table">
+                            <table className="Main_table_2">
 
                                 <tr className="Top_text_place">
                                     <th className="Top_text">Class</th>
@@ -248,7 +333,7 @@ export default function Table() {
                             </table>
                         </TabPanel>
                         <TabPanel>
-                            <form onSubmit={handleSearch(2)} className="Form_place">
+                            <form onSubmit={handleSearch(2)} className="Form_place_2">
                                 <label className="label_style_text" htmlFor="input_style_id">Класс:</label>
 
                                 <input id="input_style_id" className="input_style" type="text"
@@ -260,7 +345,7 @@ export default function Table() {
 
                                 <input className="submit_button" type="submit" value="Отправить"/>
                             </form>
-                            <table className="Main_table">
+                            <table className="Main_table_2">
 
                                 <tr className="Top_text_place">
                                     <th className="Top_text">Class</th>
@@ -278,19 +363,21 @@ export default function Table() {
                             </table>
                         </TabPanel>
                         <TabPanel>
-                            <form onSubmit={handleSearch(3)} className="Form_place">
-                                <label className="label_style_text" htmlFor="input_style_id">Класс (ex. Живопись):</label>
+                            <form onSubmit={handleSearch(3)} className="Form_place_2">
+                                <label className="label_style_text" htmlFor="input_style_id">Класс (ex.
+                                    Живопись):</label>
 
                                 <input id="input_style_id" className="input_style" type="text"
                                        value={s3c1} onChange={handleS3c1}/>
-                                <label className="label_style_text" htmlFor="input_style_id">Автор (ex. Леонардо да Винчи):</label>
+                                <label className="label_style_text" htmlFor="input_style_id">Автор (ex. Леонардо да
+                                    Винчи):</label>
 
                                 <input id="input_style_id" className="input_style" type="text"
                                        value={s3c2} onChange={handleS3c2}/>
 
                                 <input className="submit_button" type="submit" value="Отправить"/>
                             </form>
-                            <table className="Main_table">
+                            <table className="Main_table_2">
 
                                 <tr className="Top_text_place">
                                     <th className="Top_text">Class</th>
@@ -308,9 +395,10 @@ export default function Table() {
                             </table>
                         </TabPanel>
                     </div>
-
                 </Tabs>
             </div>
+            <Modal entity_name={entity_name} prev_label={prevProperty} active={active} setActive={setActive} setEntities={setEntities}/>
         </div>
+
     )
 }

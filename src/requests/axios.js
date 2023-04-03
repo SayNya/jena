@@ -60,12 +60,10 @@ export function getEntities() {
             {
                 params: {
                     query: "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +
-                        "\n" +
-                        "SELECT ?instance ?classname\n" +
+                        "SELECT ?subject ?property ?value\n" +
                         "WHERE {\n" +
-                        "  ?instance a ?class .\n" +
-                        "  ?class a owl:Class .\n" +
-                        "  BIND(strafter(str(?class), \"#\") AS ?classname)\n" +
+                        "  ?subject ?property ?value .\n" +
+                        "  ?subject a owl:NamedIndividual .\n" +
                         "}\n"
                 }
             })
@@ -76,15 +74,43 @@ export function getEntities() {
     })
 }
 
-export function createEntity(entityname, classname) {
-    axios.post(
-        JENA_URL,
+export async function createEntity(entityname, classname) {
+    await axios.post(
+        JENA_URL + "/update",
         "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
         "INSERT DATA\n" +
         "{\n" +
         `  <http://www.semanticweb.org/ontologies#${entityname}> rdf:type <${classname}> .\n` +
+        `  <http://www.semanticweb.org/ontologies#${entityname}> rdf:type <http://www.w3.org/2002/07/owl#NamedIndividual> .\n` +
         `  <http://www.semanticweb.org/ontologies#${entityname}> rdfs:label \"${entityname}\" .\n` +
+        "}",
+        {
+            headers: {
+                'Authorization': `Basic YWRtaW46YWRtaW4=`,
+                'Content-Type': 'application/sparql-update',
+            }
+        })
+        .then(res => {
+            console.log(res)
+        })
+        .catch(err => console.log(err))
+
+}
+
+export async function updateLabel(entityName, prevLabel, newLabel) {
+    await axios.post(
+        JENA_URL + "/update",
+        "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+        "\n" +
+        "DELETE {\n" +
+        `  <${entityName}> rdfs:label \"${prevLabel}\" .\n` +
+        "}\n" +
+        "INSERT {\n" +
+        `  <${entityName}> rdfs:label \"${newLabel}\" .\n` +
+        "}\n" +
+        "WHERE {\n" +
+        `  <${entityName}> rdfs:label \"${prevLabel}\" .\n` +
         "}",
         {
             headers: {
