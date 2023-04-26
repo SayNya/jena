@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import "./modal.css"
 import {createEntity, getEntities, updateLabel} from "../../requests/axios";
-import {getSortedEntities} from "../../utils/utils";
+import {getSortedEntities, getStrAfterHashtag} from "../../utils/utils";
 
 export default function Modal({entity_name, prev_label, active, setActive, setEntities}) {
     const [label, setLabel] = useState("")
@@ -25,7 +25,7 @@ export default function Modal({entity_name, prev_label, active, setActive, setEn
         <div className={active ? "modal active" : "modal"} onClick={() => setActive(false)}>
             <div className={active ? "modal__content active" : "modal__content"} onClick={e => e.stopPropagation()}>
                 <form onSubmit={handleUpdate}>
-                    <label>{entity_name}</label>
+                    <label>{getStrAfterHashtag(entity_name)}</label>
 
                     <input id="input_style_id" className="input_style" type="text"
                            onChange={e => setLabel(e.target.value)}/>

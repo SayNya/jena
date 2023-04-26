@@ -1,6 +1,15 @@
 import {Tab, TabList, TabPanel, Tabs} from "react-tabs";
 import {useEffect, useState} from "react";
-import {createEntity, getClasses, getEntities, getProperties, search1, search2, search3} from "../requests/axios";
+import {
+    createEntity,
+    getClasses,
+    getEntities,
+    getProperties,
+    removeEntity,
+    search1,
+    search2,
+    search3
+} from "../requests/axios";
 import {getSortedEntities, getStrAfterHashtag} from "../utils/utils";
 import Modal from "./modal/modal";
 
@@ -116,6 +125,21 @@ export default function Table() {
         }
     }
 
+    function handleRemove(entityURL) {
+        return async function (event) {
+            event.preventDefault();
+            try {
+                await removeEntity(entityURL);
+
+                const res = await getEntities();
+                const sortedEntities = getSortedEntities(res);
+                setEntities(sortedEntities);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    }
+
     function handleSearch(type) {
         if (type === 1) {
             return function (event) {
@@ -228,8 +252,14 @@ export default function Table() {
                                                                 )
                                                             }) : ""}
                                                         </table>
-                                                        <button onClick={handleChange(entity.subject, entity.properties)} className="change_lable">
+                                                        <button
+                                                            onClick={handleChange(entity.subject, entity.properties)}
+                                                            className="change_lable">
                                                             Change Label
+                                                        </button>
+                                                        <button onClick={handleRemove(entity.subject)}
+                                                                className="change_lable">
+                                                            Remove Entity
                                                         </button>
                                                     </TabPanel>
                                                 )
@@ -397,7 +427,8 @@ export default function Table() {
                     </div>
                 </Tabs>
             </div>
-            <Modal entity_name={entity_name} prev_label={prevProperty} active={active} setActive={setActive} setEntities={setEntities}/>
+            <Modal entity_name={entity_name} prev_label={prevProperty} active={active} setActive={setActive}
+                   setEntities={setEntities}/>
         </div>
 
     )

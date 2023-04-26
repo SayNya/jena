@@ -45,6 +45,9 @@ export function getSortedEntities(entities) {
 }
 
 export function getStrAfterHashtag(str) {
+    if (typeof str === 'undefined' || !str.trim()) {
+        return ""
+    }
     let index = str.indexOf("#");
-    return  str.substring(index + 1);
+    return str.substring(index + 1);
 }

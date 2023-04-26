@@ -125,6 +125,25 @@ export async function updateLabel(entityName, prevLabel, newLabel) {
         .catch(err => console.log(err))
 
 }
+export async function removeEntity(entityURL) {
+    await axios.post(
+        JENA_URL + "/update",
+        "DELETE WHERE {\n" +
+        `  <${entityURL}> ?p ?o .\n` +
+        "}",
+        {
+            headers: {
+                'Authorization': `Basic YWRtaW46YWRtaW4=`,
+                'Content-Type': 'application/sparql-update',
+                'Origin': 'http://localhost:3000/',
+            }
+        })
+        .then(res => {
+            console.log(res)
+        })
+        .catch(err => console.log(err))
+
+}
 
 export function search1(classname1, classname2) {
     classname1 = classname1.replaceAll(" ", "_")
